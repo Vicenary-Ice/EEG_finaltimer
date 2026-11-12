@@ -232,44 +232,56 @@
   .corner .icon-btn { border-color: transparent; border-radius: 50%; }
   #chimeBtn[aria-pressed="true"] { color: var(--fg); background: rgba(123, 31, 162, 0.3); }
 
-  /* Light/dark slider */
+  /* Light/dark slider: click or tap to flip, or drag the knob across. */
   .switch {
+    --sw-w: 4.8rem;
+    --sw-h: 2.5rem;
+    --knob: 2rem;
+    --inset: 0.2rem;
     -webkit-appearance: none;
     appearance: none;
     position: relative;
     flex: none;
-    width: 4.1rem;
-    height: 2.1rem;
+    width: var(--sw-w);
+    height: var(--sw-h);
     padding: 0;
     border: 1px solid var(--line-strong);
     border-radius: 999px;
     background: var(--hover);
     color: var(--muted);
     cursor: pointer;
-    transition: background-color 0.25s ease, border-color 0.25s ease;
+    touch-action: none;          /* let a finger drag the knob instead of scrolling */
+    transition: border-color 0.2s ease;
   }
   .switch:hover { border-color: var(--muted); }
-  .switch .track-icon { position: absolute; top: 50%; width: 0.95rem; height: 0.95rem; margin-top: -0.475rem; }
-  .switch .track-icon.sun { left: 0.55rem; }
-  .switch .track-icon.moon { right: 0.55rem; }
+  .switch .track-icon { position: absolute; top: 50%; width: 1.05rem; height: 1.05rem; margin-top: -0.525rem; pointer-events: none; }
+  .switch .track-icon.sun { left: 0.68rem; }
+  .switch .track-icon.moon { right: 0.68rem; }
   .switch .knob {
     position: absolute;
-    top: 0.2rem;
-    left: 0.2rem;
+    top: calc((var(--sw-h) - 2px - var(--knob)) / 2);
+    left: var(--inset);
     display: grid;
     place-items: center;
-    width: 1.6rem;
-    height: 1.6rem;
+    width: var(--knob);
+    height: var(--knob);
     border-radius: 50%;
     background: var(--accent);
     color: #FFFFFF;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
-    transition: transform 0.28s cubic-bezier(0.3, 0.7, 0.3, 1);
+    pointer-events: none;
+    transition: transform 0.22s cubic-bezier(0.3, 0.7, 0.3, 1);
   }
-  .switch .knob svg { width: 0.95rem; height: 0.95rem; }
-  .switch[aria-checked="true"] .knob { transform: translateX(calc(4.1rem - 2px - 0.4rem - 1.6rem)); }
+  .switch .knob svg { width: 1.1rem; height: 1.1rem; }
+  .switch[aria-checked="true"] .knob { transform: translateX(calc(var(--sw-w) - 2px - 2 * var(--inset) - var(--knob))); }
   .switch[aria-checked="true"] .knob .sun,
   .switch[aria-checked="false"] .knob .moon { display: none; }
+  .switch.dragging { cursor: grabbing; }
+  .switch.dragging .knob { transition: none; }
+  /* Flip every colour at once when the theme changes (no muddy cross-fade where the
+     digits briefly vanish into the background); only the knob animates. */
+  .theme-switching *, .theme-switching *::before, .theme-switching *::after { transition: none !important; }
+  .theme-switching .switch:not(.dragging) .knob { transition: transform 0.22s cubic-bezier(0.3, 0.7, 0.3, 1) !important; }
 
   :focus:not(:focus-visible) { outline: none; }
   :focus-visible {
@@ -759,7 +771,6 @@
   // ---------- Buttons ----------
   startBtn.addEventListener('click', toggle);
   fsBtn.addEventListener('click', toggleFullscreen);
-  themeSwitch.addEventListener('click', toggleTheme);
   chimeBtn.addEventListener('click', function () {
     state.chimeOn = !state.chimeOn;
     var label = 'Chime at 0:00 (' + (state.chimeOn ? 'on' : 'off') + ')';
@@ -802,11 +813,68 @@
     if (themeMeta) themeMeta.setAttribute('content', theme === 'light' ? '#F6F5F1' : '#111111');
     themeSwitch.setAttribute('aria-checked', String(theme === 'dark'));
   }
-  function toggleTheme() {
-    var next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-    applyTheme(next);
-    store.set(KEY.theme, next);
+  function setTheme(theme) {
+    if (root.getAttribute('data-theme') !== theme) {
+      root.classList.add('theme-switching');
+      applyTheme(theme);
+      void body.offsetWidth;   // apply the new colours with transitions switched off
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () { root.classList.remove('theme-switching'); });
+      });
+    } else {
+      applyTheme(theme);       // e.g. a drag released on the same side: knob snaps back
+    }
+    store.set(KEY.theme, theme);
   }
+  function toggleTheme() { setTheme(root.getAttribute('data-theme') === 'light' ? 'dark' : 'light'); }
+
+  // Slider: a click/tap flips it; dragging the knob past the middle picks that side.
+  var knobEl = themeSwitch.querySelector('.knob');
+  var drag = null;
+  var suppressClick = false;
+  function knobRange() { return themeSwitch.clientWidth - knobEl.offsetWidth - 2 * knobEl.offsetLeft; }
+  themeSwitch.addEventListener('pointerdown', function (e) {
+    if (e.button !== 0) return;
+    drag = {
+      id: e.pointerId,
+      x0: e.clientX,
+      from: themeSwitch.getAttribute('aria-checked') === 'true' ? knobRange() : 0,
+      moved: false
+    };
+  });
+  themeSwitch.addEventListener('pointermove', function (e) {
+    if (!drag || e.pointerId !== drag.id) return;
+    var dx = e.clientX - drag.x0;
+    if (!drag.moved) {
+      if (Math.abs(dx) < 4) return;   // small jitter still counts as a click
+      drag.moved = true;
+      try { themeSwitch.setPointerCapture(e.pointerId); } catch (err) {}
+      themeSwitch.classList.add('dragging');
+    }
+    knobEl.style.transform = 'translateX(' + clamp(drag.from + dx, 0, knobRange()) + 'px)';
+  });
+  function endDrag(e, cancelled) {
+    if (!drag || e.pointerId !== drag.id) return;
+    var d = drag;
+    drag = null;
+    if (!d.moved) return;              // a plain click: the click handler flips it
+    suppressClick = true;              // ...but the click that follows a drag must not flip it back
+    setTimeout(function () { suppressClick = false; }, 0);
+    var x = clamp(d.from + (e.clientX - d.x0), 0, knobRange());
+    themeSwitch.classList.remove('dragging');
+    knobEl.style.transform = '';
+    setTheme(cancelled ? root.getAttribute('data-theme') : (x > knobRange() / 2 ? 'dark' : 'light'));
+  }
+  themeSwitch.addEventListener('pointerup', function (e) { endDrag(e, false); });
+  themeSwitch.addEventListener('pointercancel', function (e) { endDrag(e, true); });
+  themeSwitch.addEventListener('click', function () {
+    if (suppressClick) { suppressClick = false; return; }
+    toggleTheme();
+  });
+  themeSwitch.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowLeft') { e.preventDefault(); setTheme('light'); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); setTheme('dark'); }
+  });
 
   // ---------- Fullscreen ----------
   var canFullscreen = !!(document.fullscreenEnabled || document.webkitFullscreenEnabled);
