@@ -1,0 +1,1004 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#111111">
+<title>Presentation Timer · eeg/startup</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%237B1FA2'/%3E%3Ccircle cx='16' cy='17' r='9' fill='none' stroke='white' stroke-width='2.6'/%3E%3Cpath d='M16 12v5.5l3.5 2' fill='none' stroke='white' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E">
+<script>
+  // Apply the saved theme before first paint so there is no flash of the wrong theme.
+  (function () {
+    try {
+      var t = localStorage.getItem('eegTimer.theme');
+      if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+    } catch (e) { /* storage unavailable: keep the dark default */ }
+  })();
+</script>
+<style>
+  /* Inter Bold (SIL OFL 1.1), subset to 0-9 : + - and space. Embedded so the digits look
+     identical on every machine and never depend on the network. */
+  @font-face {
+    font-family: "Timer Digits";
+    src: url("data:font/woff2;base64,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") format("woff2");
+    font-weight: 700;
+    font-style: normal;
+    font-display: block;
+    unicode-range: U+0020, U+002B, U+002D, U+0030-003A, U+2212;
+  }
+
+  :root {
+    --accent: #7B1FA2;
+    --on-accent: #FFFFFF;
+    --pad: clamp(12px, 2.2vw, 64px);
+    --bar-h: clamp(4px, 0.55vh, 12px);
+    --ui: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --digits: "Timer Digits", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: clamp(13px, 0.45vw + 8px, 26px);
+  }
+  :root, :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #111111;
+    --fg: #FFFFFF;
+    --muted: rgba(255, 255, 255, 0.55);
+    --line: rgba(255, 255, 255, 0.14);
+    --line-strong: rgba(255, 255, 255, 0.30);
+    --hover: rgba(255, 255, 255, 0.07);
+    --track: rgba(255, 255, 255, 0.09);
+    --pressed: rgba(123, 31, 162, 0.34);
+    --amber: #FFB020;   /* 10.3:1 on #111 */
+    --red: #FF5247;     /*  5.9:1 on #111 */
+    --pulse: #2E0E0E;
+    --logo-ink: #FFFFFF;
+    --halo: rgba(255, 255, 255, 0.9);
+  }
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --bg: #F6F5F1;
+    --fg: #111111;
+    --muted: rgba(17, 17, 17, 0.62);
+    --line: rgba(17, 17, 17, 0.15);
+    --line-strong: rgba(17, 17, 17, 0.32);
+    --hover: rgba(17, 17, 17, 0.05);
+    --track: rgba(17, 17, 17, 0.08);
+    --pressed: rgba(123, 31, 162, 0.14);
+    --amber: #A65F00;   /* 4.5:1 on #F6F5F1 */
+    --red: #C8102E;     /* 5.4:1 on #F6F5F1 */
+    --pulse: #F7D9D4;
+    --logo-ink: #111111;
+    --halo: transparent;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; height: 100%; }
+
+  body {
+    height: 100vh;
+    height: 100dvh;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--ui);
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 0.35s ease;
+  }
+  /* Overtime: a soft tint that breathes behind everything. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: var(--pulse);
+    opacity: 0;
+    pointer-events: none;
+  }
+  body[data-level="over"]::before { animation: pulse 2.4s ease-in-out infinite alternate; }
+  @keyframes pulse { from { opacity: 0; } to { opacity: 1; } }
+  body.idle { cursor: none; }
+
+  .top, .stage, .dock { position: relative; z-index: 1; }
+
+  /* ---------- Top bar: logo + corner toggles ---------- */
+  .top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: max(var(--pad), env(safe-area-inset-top)) max(var(--pad), env(safe-area-inset-right)) 0 max(var(--pad), env(safe-area-inset-left));
+  }
+  .logo { display: block; flex: none; height: clamp(16px, 1.35vw, 52px); width: auto; }
+  .logo .ink { fill: var(--logo-ink); transition: fill 0.35s ease; }
+  .logo .accent { fill: var(--accent); }
+  .corner { display: flex; gap: 0.25rem; }
+
+  /* ---------- Stage: the digits ---------- */
+  .stage { min-height: 0; container-type: size; display: grid; place-items: center; }
+  .clock { position: relative; display: grid; place-items: center; max-width: 100%; }
+
+  .time {
+    --em-w: 2.85;              /* width of the current text in em; set from JS */
+    margin: 0;
+    padding: 0.05em 0.08em;
+    border: 0;
+    border-radius: 0.08em;
+    background: none;
+    font-family: var(--digits);
+    font-weight: 700;
+    font-style: normal;
+    /* Fill ~94% of the width, never more than the available height.
+       The first line is a fallback for browsers without container units. */
+    font-size: min(calc(92vw / var(--em-w)), 58vh);
+    font-size: min(calc(94cqw / var(--em-w)), 104cqh);
+    line-height: 0.76;         /* Inter's caps sit exactly centred in this box */
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+    letter-spacing: 0;
+    white-space: nowrap;
+    color: var(--fg);
+    cursor: text;
+    transition: color 0.4s ease, opacity 0.3s ease;
+  }
+  body[data-level="amber"] .time { color: var(--amber); }
+  body[data-level="red"] .time,
+  body[data-level="over"] .time { color: var(--red); }
+  body.paused button.time { opacity: 0.62; }
+
+  .time-input {
+    width: 92vw;
+    width: 94cqw;
+    text-align: center;
+    color: var(--fg) !important;
+    caret-color: var(--accent);
+    outline: none;
+    box-shadow: inset 0 -0.035em 0 var(--accent);
+    border-radius: 0;
+    -webkit-user-select: text;
+    user-select: text;
+  }
+  .time-input:focus-visible { box-shadow: inset 0 -0.035em 0 var(--accent); }
+  .time-input.invalid { box-shadow: inset 0 -0.035em 0 var(--red); animation: shake 0.36s ease; }
+  @keyframes shake {
+    20% { transform: translateX(-0.04em); }
+    40% { transform: translateX(0.04em); }
+    60% { transform: translateX(-0.025em); }
+    80% { transform: translateX(0.025em); }
+  }
+
+  .status {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: clamp(10px, 3cqh, 48px);
+    font-size: clamp(0.75rem, 1.4cqw, 1.5rem);
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  body.editing .status { text-transform: none; letter-spacing: 0.01em; }
+  .status.error { color: var(--red); }
+
+  /* Hidden element used to measure text width for the fit-to-width sizing. */
+  .measure {
+    position: absolute;
+    left: 0;
+    top: 0;
+    visibility: hidden;
+    pointer-events: none;
+    font-size: 100px !important;
+    line-height: 1;
+    padding: 0;
+    white-space: pre;
+  }
+
+  /* ---------- Controls ---------- */
+  .dock {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0 var(--pad) calc(var(--pad) * 0.8 + var(--bar-h) + env(safe-area-inset-bottom));
+  }
+  .row { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0.6rem 1.4rem; }
+  .group { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0.35rem; }
+  .unit { margin-left: 0.2rem; font-size: 0.8rem; color: var(--muted); }
+
+  .fadeable { transition: opacity 0.35s ease; }
+  body.idle .fadeable { opacity: 0; pointer-events: none; transition: opacity 1.2s ease; }
+
+  .btn {
+    -webkit-appearance: none;
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45em;
+    height: 2.25rem;
+    padding: 0 0.85rem;
+    border: 1px solid var(--line);
+    border-radius: 0.6rem;
+    background: transparent;
+    color: var(--muted);
+    font: 600 0.875rem/1 var(--ui);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, filter 0.15s ease;
+  }
+  .btn:hover { color: var(--fg); background: var(--hover); border-color: var(--line-strong); }
+  .btn:active { transform: translateY(1px); }
+  .btn svg { width: 1.05em; height: 1.05em; flex: none; }
+  .btn.preset { min-width: 2.6rem; padding: 0 0.7rem; }
+  .btn[aria-pressed="true"] { color: var(--fg); border-color: var(--accent); background: var(--pressed); }
+  .btn.primary { min-width: 6.4rem; border-color: var(--accent); background: var(--accent); color: var(--on-accent); }
+  .btn.primary:hover { filter: brightness(1.15); }
+
+  .icon-btn { width: 2.5rem; height: 2.5rem; padding: 0; border-color: transparent; border-radius: 50%; }
+  .icon-btn svg { width: 1.2rem; height: 1.2rem; }
+  .icon-btn[aria-pressed="true"] { border-color: transparent; }
+
+  :focus:not(:focus-visible) { outline: none; }
+  :focus-visible {
+    outline: 2px solid transparent;  /* keeps a visible ring in forced-colors mode */
+    box-shadow: 0 0 0 2px var(--bg), 0 0 0 5px var(--accent), 0 0 0 7px var(--halo);
+  }
+
+  .hint { margin: 0; font-size: 0.75rem; line-height: 1.7; color: var(--muted); text-align: center; }
+  .hint kbd {
+    display: inline-block;
+    min-width: 1.7em;
+    margin: 0 0.1em;
+    padding: 0.2em 0.4em;
+    border: 1px solid var(--line);
+    border-radius: 0.35em;
+    font: 600 0.7rem/1 var(--ui);
+    text-align: center;
+  }
+  .hint .sep { margin: 0 0.45em; opacity: 0.5; }
+
+  /* Icon state swaps */
+  .i-pause, .i-collapse { display: none; }
+  body.running .i-play { display: none; }
+  body.running .i-pause { display: block; }
+  body.fs .i-expand { display: none; }
+  body.fs .i-collapse { display: block; }
+  :root[data-theme="dark"] .i-moon, :root[data-theme="light"] .i-sun { display: none; }
+  #chimeBtn[aria-pressed="true"] .i-bell-off, #chimeBtn[aria-pressed="false"] .i-bell { display: none; }
+  #chimeBtn[aria-pressed="true"] { color: var(--fg); background: var(--pressed); }
+
+  /* ---------- Progress bar ---------- */
+  .progress {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+    height: var(--bar-h);
+    background: var(--track);
+    pointer-events: none;
+  }
+  .progress > span {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+    transform-origin: 0 50%;
+    will-change: transform;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 560px) {
+    .row { gap: 0.5rem 0.8rem; }
+    .btn { padding: 0 0.7rem; }
+    .btn.preset { min-width: 2.3rem; padding: 0 0.55rem; }
+  }
+  @media (hover: none) and (pointer: coarse) {
+    .hint { display: none; }
+    .btn { height: 2.75rem; }
+    .icon-btn { width: 2.75rem; height: 2.75rem; }
+  }
+  @media (max-height: 480px) {
+    .dock { gap: 0.4rem; }
+    .hint { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition-duration: 0.01ms !important; animation: none !important; }
+    body[data-level="over"]::before { opacity: 0.75; }
+  }
+</style>
+</head>
+<body class="ready" data-level="normal">
+
+<header class="top">
+  <svg class="logo" viewBox="32 -842 6049 1044" role="img" aria-label="eeg/startup">
+    <path class="ink" d="M339 8Q247 8 177.5 -28Q108 -64 70 -126.5Q32 -189 32 -269Q32 -350 69.5 -412.5Q107 -475 172 -510.5Q237 -546 319 -546Q398 -546 461.5 -512.5Q525 -479 562 -416.5Q599 -354 599 -267Q599 -258 598 -246.5Q597 -235 596 -225H159V-316H514L454 -289Q454 -331 437 -362Q420 -393 390 -410.5Q360 -428 320 -428Q280 -428 249.5 -410.5Q219 -393 202 -361.5Q185 -330 185 -287V-263Q185 -219 204.5 -185.5Q224 -152 259.5 -134.5Q295 -117 343 -117Q386 -117 418.5 -130Q451 -143 478 -169L561 -79Q524 -37 468 -14.5Q412 8 339 8ZM970 8Q878 8 808.5 -28Q739 -64 701 -126.5Q663 -189 663 -269Q663 -350 700.5 -412.5Q738 -475 803 -510.5Q868 -546 950 -546Q1029 -546 1092.5 -512.5Q1156 -479 1193 -416.5Q1230 -354 1230 -267Q1230 -258 1229 -246.5Q1228 -235 1227 -225H790V-316H1145L1085 -289Q1085 -331 1068 -362Q1051 -393 1021 -410.5Q991 -428 951 -428Q911 -428 880.5 -410.5Q850 -393 833 -361.5Q816 -330 816 -287V-263Q816 -219 835.5 -185.5Q855 -152 890.5 -134.5Q926 -117 974 -117Q1017 -117 1049.5 -130Q1082 -143 1109 -169L1192 -79Q1155 -37 1099 -14.5Q1043 8 970 8ZM1587 202Q1511 202 1440.5 183.5Q1370 165 1323 128L1385 16Q1419 44 1471.5 60.5Q1524 77 1575 77Q1658 77 1695.5 40Q1733 3 1733 -70V-151L1743 -286L1741 -422V-538H1889V-90Q1889 60 1811 131Q1733 202 1587 202ZM1563 -26Q1488 -26 1427.5 -58.5Q1367 -91 1330.5 -149.5Q1294 -208 1294 -286Q1294 -365 1330.5 -423.5Q1367 -482 1427.5 -514Q1488 -546 1563 -546Q1631 -546 1683 -518.5Q1735 -491 1764 -433.5Q1793 -376 1793 -286Q1793 -197 1764 -139.5Q1735 -82 1683 -54Q1631 -26 1563 -26ZM1594 -154Q1635 -154 1667 -170.5Q1699 -187 1717 -217Q1735 -247 1735 -286Q1735 -326 1717 -355.5Q1699 -385 1667 -401.5Q1635 -418 1594 -418Q1553 -418 1521 -401.5Q1489 -385 1470.5 -355.5Q1452 -326 1452 -286Q1452 -247 1470.5 -217Q1489 -187 1521 -170.5Q1553 -154 1594 -154Z"/>
+    <path class="accent" d="M1929 100 2259 -842H2398L2068 100ZM2543 8Q2474 8 2410.5 -8.5Q2347 -25 2310 -50L2362 -162Q2399 -139 2449.5 -124.5Q2500 -110 2549 -110Q2603 -110 2625.5 -123Q2648 -136 2648 -159Q2648 -178 2630.5 -187.5Q2613 -197 2584 -202Q2555 -207 2520.5 -212Q2486 -217 2451 -225.5Q2416 -234 2387 -251Q2358 -268 2340.5 -297Q2323 -326 2323 -372Q2323 -423 2352.5 -462Q2382 -501 2438 -523.5Q2494 -546 2572 -546Q2627 -546 2684 -534Q2741 -522 2779 -499L2727 -388Q2688 -411 2648.5 -419.5Q2609 -428 2572 -428Q2520 -428 2496 -414Q2472 -400 2472 -378Q2472 -358 2489.5 -348Q2507 -338 2536 -332Q2565 -326 2599.5 -321.5Q2634 -317 2669 -308Q2704 -299 2732.5 -282.5Q2761 -266 2779 -237.5Q2797 -209 2797 -163Q2797 -113 2767 -74.5Q2737 -36 2680.5 -14Q2624 8 2543 8ZM3113 8Q3018 8 2965 -40.5Q2912 -89 2912 -185V-657H3068V-187Q3068 -153 3086 -134.5Q3104 -116 3135 -116Q3172 -116 3198 -136L3240 -26Q3216 -9 3182.5 -0.5Q3149 8 3113 8ZM2829 -418V-538H3202V-418ZM3640 0V-105L3630 -128V-316Q3630 -366 3599.5 -394Q3569 -422 3506 -422Q3463 -422 3421.5 -408.5Q3380 -395 3351 -372L3295 -481Q3339 -512 3401 -529Q3463 -546 3527 -546Q3650 -546 3718 -488Q3786 -430 3786 -307V0ZM3476 8Q3413 8 3368 -13.5Q3323 -35 3299 -72Q3275 -109 3275 -155Q3275 -203 3298.5 -239Q3322 -275 3373 -295.5Q3424 -316 3506 -316H3649V-225H3523Q3468 -225 3447.5 -207Q3427 -189 3427 -162Q3427 -132 3450.5 -114.5Q3474 -97 3515 -97Q3554 -97 3585 -115.5Q3616 -134 3630 -170L3654 -98Q3637 -46 3592 -19Q3547 8 3476 8ZM3927 0V-538H4076V-386L4055 -430Q4079 -487 4132 -516.5Q4185 -546 4261 -546V-402Q4251 -403 4243 -403.5Q4235 -404 4226 -404Q4162 -404 4122.5 -367.5Q4083 -331 4083 -254V0ZM4593 8Q4498 8 4445 -40.5Q4392 -89 4392 -185V-657H4548V-187Q4548 -153 4566 -134.5Q4584 -116 4615 -116Q4652 -116 4678 -136L4720 -26Q4696 -9 4662.5 -0.5Q4629 8 4593 8ZM4309 -418V-538H4682V-418ZM5035 8Q4968 8 4915.5 -18Q4863 -44 4834 -97.5Q4805 -151 4805 -234V-538H4961V-257Q4961 -190 4989.5 -158.5Q5018 -127 5070 -127Q5106 -127 5134 -142.5Q5162 -158 5178 -190.5Q5194 -223 5194 -272V-538H5350V0H5202V-148L5229 -105Q5202 -49 5149.5 -20.5Q5097 8 5035 8ZM5813 8Q5745 8 5694 -22Q5643 -52 5614.5 -113.5Q5586 -175 5586 -269Q5586 -364 5613 -425Q5640 -486 5691 -516Q5742 -546 5813 -546Q5889 -546 5949.5 -511.5Q6010 -477 6045.5 -415Q6081 -353 6081 -269Q6081 -184 6045.5 -122Q6010 -60 5949.5 -26Q5889 8 5813 8ZM5495 194V-538H5644V-428L5641 -268L5651 -109V194ZM5786 -120Q5825 -120 5855.5 -138Q5886 -156 5904.5 -189.5Q5923 -223 5923 -269Q5923 -316 5904.5 -349Q5886 -382 5855.5 -400Q5825 -418 5786 -418Q5747 -418 5716 -400Q5685 -382 5667 -349Q5649 -316 5649 -269Q5649 -223 5667 -189.5Q5685 -156 5716 -138Q5747 -120 5786 -120Z"/>
+  </svg>
+  <div class="corner fadeable">
+    <button type="button" class="btn icon-btn" id="chimeBtn" aria-pressed="false" aria-label="Chime at 0:00 (off)" title="Chime at 0:00 (off)">
+      <svg class="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+      <svg class="i-bell-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.7 3.4A6 6 0 0 1 18 8c0 3.1.6 5.2 1.3 6.6M17 17H3s3-2 3-9c0-.4 0-.8.1-1.2"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path d="M3 3l18 18"/></svg>
+    </button>
+    <button type="button" class="btn icon-btn" id="themeBtn" aria-label="Switch to light mode (D)" title="Switch to light mode (D)">
+      <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 1 1 9.8 3.5a6.8 6.8 0 0 0 10.7 10.7z"/></svg>
+    </button>
+  </div>
+</header>
+
+<main class="stage">
+  <div class="clock">
+    <button type="button" class="time" id="time" aria-describedby="timeHelp">5:00</button>
+    <input class="time time-input" id="timeInput" type="text" inputmode="text" enterkeyhint="done"
+           autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+           aria-label="Custom time, for example 7:30 or 7" hidden>
+    <div class="status" id="status" aria-hidden="true"></div>
+  </div>
+  <span class="sr-only" id="timeHelp">Activate to type a custom time</span>
+</main>
+
+<footer class="dock fadeable" id="dock">
+  <div class="row">
+    <div class="group" role="group" aria-label="Preset durations">
+      <button type="button" class="btn preset" data-min="1" aria-label="1 minute">1</button>
+      <button type="button" class="btn preset" data-min="3" aria-label="3 minutes">3</button>
+      <button type="button" class="btn preset" data-min="5" aria-label="5 minutes">5</button>
+      <button type="button" class="btn preset" data-min="10" aria-label="10 minutes">10</button>
+      <button type="button" class="btn preset" data-min="15" aria-label="15 minutes">15</button>
+      <button type="button" class="btn preset" data-min="20" aria-label="20 minutes">20</button>
+      <button type="button" class="btn preset" data-min="30" aria-label="30 minutes">30</button>
+      <span class="unit" aria-hidden="true">min</span>
+    </div>
+    <div class="group" role="group" aria-label="Adjust time">
+      <button type="button" class="btn" id="minusBtn" aria-label="Subtract 1 minute" title="−1 min (↓)">−1 min</button>
+      <button type="button" class="btn" id="plusBtn" aria-label="Add 1 minute" title="+1 min (↑)">+1 min</button>
+    </div>
+    <div class="group">
+      <button type="button" class="btn primary" id="startBtn" title="Start / pause (Space)">
+        <svg class="i-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.6v14.8a1 1 0 0 0 1.5.9l12-7.4a1 1 0 0 0 0-1.8l-12-7.4A1 1 0 0 0 7 4.6z"/></svg>
+        <svg class="i-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4.2" height="16" rx="1"/><rect x="13.8" y="4" width="4.2" height="16" rx="1"/></svg>
+        <span id="startLabel">Start</span>
+      </button>
+      <button type="button" class="btn" id="resetBtn" title="Reset (R)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3.5 4v5h5"/></svg>
+        Reset
+      </button>
+      <button type="button" class="btn" id="fsBtn" title="Fullscreen (F)">
+        <svg class="i-expand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+        <svg class="i-collapse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>
+        <span id="fsLabel">Fullscreen</span>
+      </button>
+    </div>
+  </div>
+  <p class="hint" id="hint">
+    <kbd>Space</kbd> start/pause<span class="sep">·</span><kbd>R</kbd> reset<span class="sep">·</span><kbd>F</kbd> fullscreen<span class="sep">·</span><kbd>↑</kbd><kbd>↓</kbd> ±1 min<span class="sep">·</span><kbd>D</kbd> theme<span class="sep">·</span>click the time to type one
+  </p>
+</footer>
+
+<div class="progress" aria-hidden="true"><span id="bar"></span></div>
+<span class="time measure" id="measure" aria-hidden="true"></span>
+<div class="sr-only" id="live" aria-live="polite" aria-atomic="true"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---------- Settings ----------
+  var AMBER_AT = 120;              // seconds remaining at which digits turn amber
+  var RED_AT = 30;                 // seconds remaining at which digits turn red
+  var IDLE_MS = 3000;              // controls fade after this long without movement (while running)
+  var STEP_MS = 60 * 1000;         // +/- 1 minute
+  var MIN_MS = 1000;
+  var MAX_MS = (100 * 3600 - 1) * 1000;   // 99:59:59
+  var DEFAULT_MS = 5 * 60 * 1000;
+  var RESUME_WINDOW_MS = 3 * 60 * 1000;   // an accidental reload within this window resumes the run
+  var KEY = { duration: 'eegTimer.duration', theme: 'eegTimer.theme', session: 'eegTimer.session' };
+
+  // ---------- Storage with a safe in-memory fallback ----------
+  var store = (function () {
+    var mem = Object.create(null);
+    var ls = null;
+    try {
+      ls = window.localStorage;
+      ls.setItem('__probe__', '1');
+      ls.removeItem('__probe__');
+    } catch (e) { ls = null; }
+    return {
+      get: function (k) {
+        if (ls) { try { var v = ls.getItem(k); if (v !== null) return v; } catch (e) {} }
+        return k in mem ? mem[k] : null;
+      },
+      set: function (k, v) {
+        mem[k] = String(v);
+        if (ls) { try { ls.setItem(k, String(v)); } catch (e) {} }
+      },
+      remove: function (k) {
+        delete mem[k];
+        if (ls) { try { ls.removeItem(k); } catch (e) {} }
+      }
+    };
+  })();
+
+  // ---------- Elements ----------
+  function $(id) { return document.getElementById(id); }
+  var root = document.documentElement;
+  var body = document.body;
+  var timeEl = $('time');
+  var inputEl = $('timeInput');
+  var statusEl = $('status');
+  var measureEl = $('measure');
+  var barEl = $('bar');
+  var liveEl = $('live');
+  var startBtn = $('startBtn');
+  var startLabel = $('startLabel');
+  var resetBtn = $('resetBtn');
+  var fsBtn = $('fsBtn');
+  var fsLabel = $('fsLabel');
+  var plusBtn = $('plusBtn');
+  var minusBtn = $('minusBtn');
+  var themeBtn = $('themeBtn');
+  var chimeBtn = $('chimeBtn');
+  var themeMeta = document.querySelector('meta[name="theme-color"]');
+  var presetBtns = Array.prototype.slice.call(document.querySelectorAll('[data-min]'));
+
+  // ---------- State ----------
+  // Time is always derived from wall-clock timestamps, never from counting ticks:
+  // while running, remaining = endAt - Date.now(). Background throttling cannot cause drift.
+  var state = {
+    duration: DEFAULT_MS,   // the last-set duration (Reset returns here; remembered between visits)
+    total: DEFAULT_MS,      // denominator for the progress bar (duration plus any +/- during a run)
+    remaining: DEFAULT_MS,  // used while not running
+    endAt: 0,               // timestamp when the countdown reaches 0:00 (while running)
+    running: false,
+    started: false,         // true once started, until reset or a new time is set
+    chimeOn: false,         // off by default, deliberately not remembered
+    chimed: false
+  };
+  var editing = false;
+
+  function now() { return Date.now(); }
+  function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
+  function remainingNow() { return state.running ? state.endAt - now() : state.remaining; }
+  function isValidMs(v) { return typeof v === 'number' && isFinite(v) && v >= MIN_MS && v <= MAX_MS; }
+
+  // ---------- Formatting & parsing ----------
+  function pad2(n) { return n < 10 ? '0' + n : String(n); }
+  function fmt(totalSec) {
+    var h = Math.floor(totalSec / 3600);
+    var m = Math.floor((totalSec % 3600) / 60);
+    var s = totalSec % 60;
+    return h > 0 ? h + ':' + pad2(m) + ':' + pad2(s) : m + ':' + pad2(s);
+  }
+  // Counting down uses ceil, so a 5:00 timer shows 5:00 for its first second and 0:00
+  // appears exactly when time is up. After that it counts up as +0:01, +0:02, ...
+  function view(ms) {
+    if (ms > 0) {
+      var secs = Math.ceil(ms / 1000);
+      return { text: fmt(secs), secs: secs, over: false };
+    }
+    var overSec = Math.floor(-ms / 1000);
+    return { text: overSec >= 1 ? '+' + fmt(overSec) : fmt(0), secs: 0, over: true };
+  }
+  function spoken(ms) {
+    var t = Math.round(Math.abs(ms) / 1000);
+    var h = Math.floor(t / 3600), m = Math.floor((t % 3600) / 60), s = t % 60, out = [];
+    if (h) out.push(h + (h === 1 ? ' hour' : ' hours'));
+    if (m) out.push(m + (m === 1 ? ' minute' : ' minutes'));
+    if (s || !out.length) out.push(s + (s === 1 ? ' second' : ' seconds'));
+    return out.join(' ');
+  }
+  // Accepts "7" (minutes), "7.5" (minutes), "7:30", ":45", "1:15:00", "90s", "1h 30m", "2m30s".
+  function parseTime(input) {
+    var s = String(input).trim().toLowerCase().replace(/,/g, '.');
+    if (!s) return null;
+    var sec = null;
+    if (/^(\d+\.?\d*|\.\d+)$/.test(s)) {
+      sec = parseFloat(s) * 60;
+    } else if (/^\d*:\d*(:\d*)?$/.test(s) && /\d/.test(s)) {
+      var p = s.split(':').map(function (x) { return x === '' ? 0 : parseInt(x, 10); });
+      sec = p.length === 3 ? p[0] * 3600 + p[1] * 60 + p[2] : p[0] * 60 + p[1];
+    } else {
+      var re = /(\d+(?:\.\d+)?)\s*(h(?:ours?|rs?)?|m(?:in(?:ute)?s?)?|s(?:ec(?:ond)?s?)?)\s*/y;
+      var total = 0, pos = 0, m;
+      while ((m = re.exec(s)) !== null) {
+        var unit = m[2].charAt(0);
+        total += parseFloat(m[1]) * (unit === 'h' ? 3600 : unit === 'm' ? 60 : 1);
+        pos = re.lastIndex;
+        if (pos >= s.length) break;
+      }
+      if (pos > 0 && pos === s.length) sec = total;
+    }
+    if (sec === null || !isFinite(sec)) return null;
+    var ms = Math.round(sec) * 1000;
+    return isValidMs(ms) ? ms : null;
+  }
+
+  // ---------- Fit-to-width sizing ----------
+  // The digits' font-size is min(94% of the stage width / text width in em, stage height).
+  // We measure the text width once per "shape" (all digits replaced by 0, since they are
+  // tabular) and hand it to CSS, so window resizes need no JavaScript at all.
+  var emCache = Object.create(null);
+  function emWidth(text, noCache) {
+    var key = text.replace(/\d/g, '0');
+    if (!noCache && emCache[key]) return emCache[key];
+    measureEl.textContent = key;
+    var w = measureEl.getBoundingClientRect().width / 100 || 2.85;
+    if (!noCache) emCache[key] = w;
+    return w;
+  }
+  var sizedEm = 0;
+  function fitDigits(text) {
+    // Size for whichever is wider: the current text or the set duration. This keeps the size
+    // stable when e.g. a 15:00 timer passes 9:59, instead of jumping bigger mid-talk.
+    var w = Math.max(emWidth(text), emWidth(fmt(Math.round(state.duration / 1000))));
+    if (Math.abs(w - sizedEm) > 0.0005) {
+      sizedEm = w;
+      timeEl.style.setProperty('--em-w', w.toFixed(4));
+    }
+  }
+  function fitInput() {
+    var w = Math.max(emWidth(inputEl.value || '0:00', true), sizedEm || 2.2);
+    inputEl.style.setProperty('--em-w', w.toFixed(4));
+  }
+
+  // ---------- Rendering ----------
+  var shownText = '';
+  var shownLevel = '';
+  function levelFor(v) {
+    if (v.over) return 'over';
+    if (v.secs <= RED_AT) return 'red';
+    if (v.secs <= AMBER_AT) return 'amber';
+    return 'normal';
+  }
+  function render(quiet) {
+    var ms = remainingNow();
+    var v = view(ms);
+    if (v.text !== shownText) {
+      shownText = v.text;
+      timeEl.textContent = v.text;
+      fitDigits(v.text);
+      document.title = (state.started && !state.running ? '❚❚ ' : '') + v.text + ' · Timer';
+    }
+    var level = levelFor(v);
+    if (level !== shownLevel) {
+      if (state.running && shownLevel && !quiet) {
+        if (level === 'amber') announce('2 minutes left');
+        else if (level === 'red') announce('30 seconds left');
+      }
+      shownLevel = level;
+      body.setAttribute('data-level', level);
+    }
+    var frac = state.total > 0 ? clamp(ms / state.total, 0, 1) : 0;
+    barEl.style.transform = 'scaleX(' + frac.toFixed(5) + ')';
+
+    if (state.running && ms <= 0 && !state.chimed) {
+      state.chimed = true;
+      saveSession();
+      announce("Time's up");
+      // Only chime if we noticed the moment promptly (avoids a late chime after a sleeping tab).
+      if (state.chimeOn && ms > -5000) playChime();
+    }
+  }
+
+  var raf = 0;
+  function frame() {
+    raf = 0;
+    render();
+    if (state.running && document.visibilityState === 'visible') raf = requestAnimationFrame(frame);
+  }
+  function startLoop() { if (!raf && state.running) raf = requestAnimationFrame(frame); }
+
+  // Backup tick: keeps state (title, chime, saved session) current even when the tab is in the
+  // background and requestAnimationFrame is paused. Accuracy comes from timestamps, not this.
+  var lastSave = 0;
+  setInterval(function () {
+    if (!state.running) return;
+    render();
+    if (now() - lastSave > 5000) saveSession();
+  }, 500);
+
+  function syncUI() {
+    body.classList.toggle('running', state.running);
+    body.classList.toggle('paused', state.started && !state.running);
+    body.classList.toggle('ready', !state.started);
+    startLabel.textContent = state.running ? 'Pause' : state.started ? 'Resume' : 'Start';
+    presetBtns.forEach(function (b) {
+      b.setAttribute('aria-pressed', String(Number(b.getAttribute('data-min')) * 60000 === state.duration));
+    });
+    if (!editing) {
+      statusEl.classList.remove('error');
+      statusEl.textContent = state.started && !state.running ? 'Paused' : '';
+    }
+    shownText = '';   // force a full refresh (title prefix, size)
+    render(true);
+    saveSession();
+  }
+
+  function announce(msg) {
+    liveEl.textContent = '';
+    setTimeout(function () { liveEl.textContent = msg; }, 30);
+  }
+
+  // ---------- Actions ----------
+  function start() {
+    if (state.running) return;
+    state.endAt = now() + state.remaining;
+    state.running = true;
+    state.started = true;
+    if (state.chimeOn) ensureAudio();
+    acquireWakeLock();
+    startLoop();
+    scheduleIdle();
+    syncUI();
+    announce('Started');
+  }
+  function pause() {
+    if (!state.running) return;
+    state.remaining = state.endAt - now();
+    state.running = false;
+    releaseWakeLock();
+    showControls();
+    syncUI();
+    announce('Paused at ' + timeEl.textContent);
+  }
+  function toggle() { if (state.running) pause(); else start(); }
+
+  function reset() {
+    state.running = false;
+    state.started = false;
+    state.chimed = false;
+    state.remaining = state.total = state.duration;
+    releaseWakeLock();
+    showControls();
+    syncUI();
+    announce('Reset to ' + spoken(state.duration));
+  }
+
+  // Presets and typed times. If the timer is running it keeps running from the new time
+  // (so a correction mid-talk never freezes the clock); otherwise it is ready to start.
+  function setDuration(ms) {
+    ms = clamp(Math.round(ms / 1000) * 1000, MIN_MS, MAX_MS);
+    state.duration = state.total = ms;
+    state.chimed = false;
+    store.set(KEY.duration, ms);
+    if (state.running) {
+      state.endAt = now() + ms;
+    } else {
+      state.remaining = ms;
+      state.started = false;
+    }
+    syncUI();
+    announce('Timer set to ' + spoken(ms));
+  }
+
+  function adjust(delta) {
+    if (!state.started) {
+      // Not started yet: change the set duration itself.
+      var next = state.duration + delta;
+      if (!isValidMs(next)) return;
+      setDuration(next);
+      return;
+    }
+    // Mid-run (running or paused): shift the remaining time.
+    var rem = remainingNow();
+    var nextRem = rem + delta;
+    if (delta < 0 && rem > 0) nextRem = Math.max(0, nextRem);   // -1 min never jumps into overtime
+    nextRem = Math.min(nextRem, MAX_MS);
+    state.total = Math.max(state.total + (nextRem - rem), nextRem, MIN_MS);
+    if (nextRem > 0) state.chimed = false;
+    if (state.running) state.endAt = now() + nextRem;
+    else state.remaining = nextRem;
+    syncUI();
+    announce((delta > 0 ? 'Added' : 'Removed') + ' 1 minute');
+  }
+
+  // ---------- Custom time entry (click the digits) ----------
+  var editStart = '';
+  function beginEdit() {
+    if (editing) return;
+    editing = true;
+    var ms = remainingNow();
+    editStart = ms > 0 ? fmt(Math.ceil(ms / 1000)) : fmt(Math.round(state.duration / 1000));
+    inputEl.value = editStart;
+    inputEl.classList.remove('invalid');
+    body.classList.add('editing');
+    timeEl.hidden = true;
+    inputEl.hidden = false;
+    fitInput();
+    showControls();
+    statusEl.classList.remove('error');
+    statusEl.textContent = 'Type a time like 7:30 or 7 · Enter to set · Esc to cancel';
+    inputEl.focus({ preventScroll: true });
+    inputEl.select();
+  }
+  function endEdit(mode) {             // mode: 'enter' | 'blur' | 'cancel'
+    if (!editing) return;
+    var raw = inputEl.value.trim();
+    var ms = null;
+    if (mode !== 'cancel' && raw !== editStart) {
+      ms = parseTime(raw);
+      if (ms === null && mode === 'enter') {
+        inputEl.classList.remove('invalid');
+        void inputEl.offsetWidth;       // restart the shake animation
+        inputEl.classList.add('invalid');
+        statusEl.classList.add('error');
+        statusEl.textContent = 'Couldn’t read “' + raw + '” · try 7:30, 7, 90s or 1:15:00';
+        return;
+      }
+    }
+    editing = false;
+    body.classList.remove('editing');
+    timeEl.hidden = false;
+    inputEl.hidden = true;               // (this blurs the input; endEdit is already done)
+    if (mode !== 'blur' && document.activeElement === inputEl) inputEl.blur();
+    if (ms !== null) setDuration(ms); else syncUI();
+    if (state.running) scheduleIdle();
+  }
+  timeEl.addEventListener('click', beginEdit);
+  inputEl.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); endEdit('enter'); }
+    else if (e.key === 'Escape') { e.preventDefault(); endEdit('cancel'); }
+    e.stopPropagation();
+  });
+  inputEl.addEventListener('input', function () {
+    inputEl.classList.remove('invalid');
+    fitInput();
+  });
+  inputEl.addEventListener('blur', function () { endEdit('blur'); });
+
+  // ---------- Controls fade while running ----------
+  var idleTimer = 0;
+  function showControls() {
+    clearTimeout(idleTimer);
+    body.classList.remove('idle');
+  }
+  function scheduleIdle() {
+    showControls();
+    if (!state.running || editing) return;
+    idleTimer = setTimeout(function () {
+      if (state.running && !editing) body.classList.add('idle');
+    }, IDLE_MS);
+  }
+  function onActivity() { if (state.running) scheduleIdle(); else showControls(); }
+
+  // Ignore zero-distance "moves" some browsers fire when content changes under a still cursor.
+  var lastX = -1, lastY = -1;
+  window.addEventListener('pointermove', function (e) {
+    if (Math.abs(e.screenX - lastX) < 3 && Math.abs(e.screenY - lastY) < 3) return;
+    lastX = e.screenX; lastY = e.screenY;
+    onActivity();
+  }, { passive: true });
+  // A tap while the controls are hidden only reveals them; it never triggers what's underneath.
+  var swallowClick = false;
+  window.addEventListener('pointerdown', function () {
+    if (body.classList.contains('idle')) swallowClick = true;
+    onActivity();
+  }, { capture: true, passive: true });
+  window.addEventListener('click', function (e) {
+    if (swallowClick) { swallowClick = false; e.preventDefault(); e.stopPropagation(); }
+  }, true);
+  window.addEventListener('pointerup', function () {
+    setTimeout(function () { swallowClick = false; }, 0);
+  }, true);
+  window.addEventListener('wheel', onActivity, { passive: true });
+  document.addEventListener('focusin', onActivity);
+
+  // ---------- Buttons ----------
+  presetBtns.forEach(function (b) {
+    b.addEventListener('click', function () { setDuration(Number(b.getAttribute('data-min')) * 60000); });
+  });
+  plusBtn.addEventListener('click', function () { adjust(STEP_MS); });
+  minusBtn.addEventListener('click', function () { adjust(-STEP_MS); });
+  startBtn.addEventListener('click', toggle);
+  resetBtn.addEventListener('click', reset);
+  fsBtn.addEventListener('click', toggleFullscreen);
+  themeBtn.addEventListener('click', toggleTheme);
+  chimeBtn.addEventListener('click', function () {
+    state.chimeOn = !state.chimeOn;
+    var label = 'Chime at 0:00 (' + (state.chimeOn ? 'on' : 'off') + ')';
+    chimeBtn.setAttribute('aria-pressed', String(state.chimeOn));
+    chimeBtn.setAttribute('aria-label', label);
+    chimeBtn.title = label;
+    if (state.chimeOn) { ensureAudio(); bell(987.77, 0, 0.18); }   // quick preview of the sound
+    announce(label);
+  });
+
+  // ---------- Keyboard shortcuts ----------
+  window.addEventListener('keydown', function (e) {
+    if (editing || e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
+    var t = e.target;
+    if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+    var k = e.key;
+    if (k === ' ' || k === 'Spacebar' || e.code === 'Space') {
+      e.preventDefault();               // never "click" the focused button as well
+      if (!e.repeat) toggle();
+      return;
+    }
+    if (k === 'ArrowUp') { e.preventDefault(); adjust(STEP_MS); return; }
+    if (k === 'ArrowDown') { e.preventDefault(); adjust(-STEP_MS); return; }
+    if (e.repeat) return;
+    switch (k.toLowerCase()) {
+      case 'r': reset(); break;
+      case 'f': toggleFullscreen(); break;
+      case 'd': toggleTheme(); break;
+      default: return;
+    }
+    e.preventDefault();
+  });
+  window.addEventListener('keyup', function (e) {
+    if (!editing && (e.key === ' ' || e.code === 'Space') && e.target && e.target.tagName === 'BUTTON') e.preventDefault();
+  });
+
+  // ---------- Theme ----------
+  function applyTheme(theme) {
+    root.setAttribute('data-theme', theme);
+    if (themeMeta) themeMeta.setAttribute('content', theme === 'light' ? '#F6F5F1' : '#111111');
+    var label = theme === 'dark' ? 'Switch to light mode (D)' : 'Switch to dark mode (D)';
+    themeBtn.setAttribute('aria-label', label);
+    themeBtn.title = label;
+  }
+  function toggleTheme() {
+    var next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    applyTheme(next);
+    store.set(KEY.theme, next);
+  }
+
+  // ---------- Fullscreen ----------
+  var canFullscreen = !!(document.fullscreenEnabled || document.webkitFullscreenEnabled);
+  function isFullscreen() { return !!(document.fullscreenElement || document.webkitFullscreenElement); }
+  function toggleFullscreen() {
+    if (!canFullscreen) return;
+    try {
+      var p;
+      if (isFullscreen()) {
+        p = (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+      } else {
+        var el = document.documentElement;
+        p = (el.requestFullscreen || el.webkitRequestFullscreen).call(el, { navigationUI: 'hide' });
+      }
+      if (p && typeof p.catch === 'function') p.catch(function () {});
+    } catch (e) {}
+  }
+  function onFullscreenChange() {
+    var fs = isFullscreen();
+    body.classList.toggle('fs', fs);
+    fsLabel.textContent = fs ? 'Exit fullscreen' : 'Fullscreen';
+  }
+  document.addEventListener('fullscreenchange', onFullscreenChange);
+  document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+  if (!canFullscreen) fsBtn.hidden = true;   // e.g. iPhone Safari
+
+  // ---------- Screen wake lock (held only while running) ----------
+  var wakeLock = null, wakePending = false;
+  function acquireWakeLock() {
+    if (!('wakeLock' in navigator) || wakeLock || wakePending || document.visibilityState !== 'visible') return;
+    wakePending = true;
+    navigator.wakeLock.request('screen').then(function (lock) {
+      wakePending = false;
+      if (!state.running) { lock.release().catch(function () {}); return; }
+      wakeLock = lock;
+      lock.addEventListener('release', function () { if (wakeLock === lock) wakeLock = null; });
+    }).catch(function () { wakePending = false; });   // unsupported, denied, or insecure context
+  }
+  function releaseWakeLock() {
+    var lock = wakeLock;
+    wakeLock = null;
+    if (lock) lock.release().catch(function () {});
+  }
+
+  // ---------- Optional chime (Web Audio, no files) ----------
+  var audioCtx = null;
+  function ensureAudio() {
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    if (!audioCtx) { try { audioCtx = new AC(); } catch (e) { return null; } }
+    if (audioCtx.state === 'suspended') audioCtx.resume().catch(function () {});
+    return audioCtx;
+  }
+  function bell(freq, delay, level) {
+    var ctx = ensureAudio();
+    if (!ctx) return;
+    var t = ctx.currentTime + 0.03 + delay;
+    var out = ctx.createGain();
+    out.connect(ctx.destination);
+    out.gain.setValueAtTime(0.0001, t);
+    out.gain.exponentialRampToValueAtTime(level, t + 0.012);
+    out.gain.exponentialRampToValueAtTime(0.0001, t + 1.8);
+    [[1, 1], [2, 0.28], [3.01, 0.08]].forEach(function (partial) {
+      var osc = ctx.createOscillator();
+      var g = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq * partial[0];
+      g.gain.value = partial[1];
+      osc.connect(g);
+      g.connect(out);
+      osc.start(t);
+      osc.stop(t + 1.9);
+    });
+  }
+  function playChime() {
+    bell(987.77, 0, 0.22);     // B5
+    bell(783.99, 0.32, 0.22);  // G5
+    bell(659.25, 0.64, 0.24);  // E5
+  }
+
+  // ---------- Persistence ----------
+  function saveSession() {
+    lastSave = now();
+    if (!state.started) { store.remove(KEY.session); return; }
+    store.set(KEY.session, JSON.stringify({
+      running: state.running,
+      endAt: state.endAt,
+      remaining: state.remaining,
+      total: state.total,
+      duration: state.duration,
+      chimed: state.chimed,
+      seenAt: now()
+    }));
+  }
+  function restore() {
+    var saved = parseInt(store.get(KEY.duration), 10);
+    if (isValidMs(saved)) state.duration = state.total = state.remaining = saved;
+    // If the page was reloaded mid-talk (e.g. an accidental Cmd+R), pick up where it left off.
+    try {
+      var s = JSON.parse(store.get(KEY.session) || 'null');
+      if (s && typeof s.seenAt === 'number' && now() - s.seenAt < RESUME_WINDOW_MS &&
+          s.duration === state.duration && isFinite(s.total) && s.total > 0) {
+        state.started = true;
+        state.total = s.total;
+        state.chimed = !!s.chimed;
+        if (s.running && isFinite(s.endAt)) { state.running = true; state.endAt = s.endAt; }
+        else if (isFinite(s.remaining)) state.remaining = s.remaining;
+        else state.started = false;
+      }
+    } catch (e) {}
+  }
+
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible') {
+      render();
+      if (state.running) { acquireWakeLock(); startLoop(); }
+    } else {
+      saveSession();
+    }
+  });
+  window.addEventListener('pagehide', saveSession);
+
+  // ---------- Boot ----------
+  restore();
+  applyTheme(root.getAttribute('data-theme') === 'light' ? 'light' : 'dark');
+  syncUI();
+  if (state.running) { acquireWakeLock(); startLoop(); scheduleIdle(); }
+  if (document.fonts && document.fonts.load) {
+    document.fonts.load('700 100px "Timer Digits"', '0123456789:+').then(function () {
+      emCache = Object.create(null);
+      sizedEm = 0;
+      shownText = '';
+      render();
+    }).catch(function () {});
+  }
+})();
+</script>
+</body>
+</html>
